@@ -1,0 +1,69 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <pthread.h>
+#include <semaphore.h>
+#define SHARED 0
+void *producer(void *);
+void *consumer(void *);
+sem_t empty,full; //İki semafor tanımladık biri empty biri full.Üretici raf dolduğunda
+üretemez.Tüketici raf boşaldığında tüketemez.
+int data;
+int numIter;
+int main()
+{
+pthread_t pid,cid;
+pthread_attr_t attr;
+pthread_attr_init(&attr);
+pthread_attr_setscope(&attr,PTHREAD_SCOPE_SYSTEM);
+sem_init(&empty,SHARED,1); //Semaforları tanımlar
+sem_init(&full,SHARED,0); //Semaforları tanımlar
+numIter=atoi(argv[1]);
+pthread_create(&pid,&attr,producer,NULL); //Pthreadle threadleri oluşturduk.
+pthread_create(&cid,&attr,consumer,NULL); //Pthreadle threadleri oluşturduk.
+pthread_join(pid,NULL);
+pthread_join(cid,NULL);
+}
+void *producer(void *arg){ //Fonksiyonları tanımladık
+int produced;
+for(produced=1;produced<=num.ıter;produced++){ //Bu noktaya geldiyse kritik noktaya
+gelmiştir.Üretimini yapılmıştır.Tüketim yapılması gerek.
+//Produced ı arttırır tüketici gelene kadar.1 yapar 2 yapar... taki
+tüketici gelip onu azaltana kadar
+sem_wait(&empty); //wait indirger //Yeşil ışık kırmızı ışık olayında ; üretici
+üretebildiğine göre tüketici gelsin tüketsin diye yeşil ışık yandı.
+data=produced;
+printf("Producer:%d\n",data);
+sem_post(&full); //post arttırır
+}
+}
+//sem_wait(full) sem_post(empty) olur.
+//----------------------------------------------------//
+void *consumer(void *arg){
+int total=0;
+int consumed;
+for(consumed=1;consumed<=numIter;consumed++){ //benim belirlediğim sayı kadar
+gerçekleşir.While 1 deseydik sınırsız olurdu.
+sem_wait(&full);
+}
+}
+//-------------------------------------------------//
+void *consumer(void *arg){
+int total=0;
+int consumed;
+for(consumed=1;consumed<=numIter;consumed){
+sem_wait(&full);
+total=total+data;
+data --;
+printf("Consumer:%d\n",data);
+sem_post(&empty);
+}
+}
+printf("Total=%d",total);
+//İki process aynı anda çalıyor biri arttırmaya çalışırken diğeri azaltmaya çalışıyor
+//Biz bunu kontrol edemeeyiz.Aynı anda çalışmak zorunda.Bizim burda yaptığımız ikisini
+senkronize çalıştırmak
+//Argümanımız (amaç)belirli bufferdan fazla üretim yapmamak,bişey bişeyi arttırmamak
+//main fonksiyonu içinde tanımladığımız bişey yok.
+//derlemek için lpthread yazmayı unutma
+//data değeri 0 olmadı hiç çünkü tüketici bitmiş bişeyi -den tüketemez.Ve de diğer şartımız
+üreticinin tüketici yokken üretmemeseydi onu da sağladı.
